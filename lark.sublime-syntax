@@ -5,6 +5,15 @@ file_extensions:
   - lark
 scope: source.lark
 
+variables:
+  def_rule_format: '[a-z_]+'
+  def_terminal_format: '[A-Z_]+'
+  def_illegal_format: '(?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+'
+  def_start_name: 'start'
+  operator_def: ':'
+  operator_or: '|'
+
+
 contexts:
   # The prototype context is prepended to all contexts but those setting
   # meta_include_prototype: false.
@@ -14,26 +23,38 @@ contexts:
   main:
     # The main context is the initial starting point of our syntax.
     # Include other contexts from here (or specify them directly).
+    - include: definition
     - include: keywords
     - include: numbers
     - include: strings
 
-  rule:
-    - match: ^([A-Za-z_]+)\s*:((.+|\n\s*\|.+)+)
+  definition:
+    - match: '^({{def_start_name}})\s*({{operator_def}})'
       captures:
-        - '0': {push: rule_name}
-        - '1': {push: rule_contents}
+        1: entity.name.function.constructor.lark
+        2: keyword.operator.assignment.lark
+      push: rule_body
+    - match: '^({{def_rule_format}})\s*({{operator_def}})'
+      captures:
+        1: entity.name.function.lark
+        2: keyword.operator.assignment.lark
+      push: rule_body
+    - match: '^({{def_terminal_format}})\s*({{operator_def}})'
+      captures:
+        1: entity.name.constant.lark
+        2: keyword.operator.assignment.lark
+      push: terminal_body
+    - match: '^({{def_illegal_format}})\s*({{operator_def}})'
+        1: invalid.lark
+        2: keyword.operator.assignment.lark
 
-  rule_name:
-    - match: (?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+
-      scope: invalid.illegal
-      pop: true
-    - match: ([A-Z_]+)
-      scope: #constant
-      pop: true
-    - match: ([a-z_]+)
-      scope: #function
-      pop: true
+
+
+  rule_body:
+    - match:
+
+
+
 
 
 
