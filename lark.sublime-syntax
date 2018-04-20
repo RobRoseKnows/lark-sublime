@@ -18,6 +18,25 @@ contexts:
     - include: numbers
     - include: strings
 
+  rule:
+    - match: ^([A-Za-z_]+)\s*:((.+|\n\s*\|.+)+)
+      captures:
+        - '0': {push: rule_name}
+        - '1': {push: rule_contents}
+
+  rule_name:
+    - match: (?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+
+      scope: invalid.illegal
+      pop: true
+    - match: ([A-Z_]+)
+      scope: #constant
+      pop: true
+    - match: ([a-z_]+)
+      scope: #function
+      pop: true
+
+
+
   keywords:
     # Keywords are if, else for and while.
     # Note that blackslashes don't need to be escaped within single quoted
@@ -25,11 +44,11 @@ contexts:
     # need to be escaped: this is done by using two single quotes next to each
     # other.
     - match: '\b(if|else|for|while)\b'
-      scope: keyword.control.example-c
+      scope: keyword.control.lark
 
   numbers:
     - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric.example-c
+      scope: constant.numeric.lark
 
   strings:
     # Strings begin and end with quotes, and use backslashes as an escape
