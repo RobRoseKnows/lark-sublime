@@ -10,11 +10,25 @@ variables:
   def_terminal_format: '[A-Z_]+'
   def_illegal_format: '(?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+'
   def_start_name: 'start'
-  operator_def: ':'
-  operator_or: '|'
+  int_pattern: '[0-9]+'
+  sig_int_pattern: '-?{{int_pattern}}'
+  operator_def: '\:'
+  operator_or: '\|'
   operator_qmrk: '\?'
   operator_star: '\*'
   operator_plus: '\+'
+  operator_arrow: '\-\>'
+  operator_ddot: '\.\.'
+  operator_any: |-
+    (?:
+      {{operator_def}}|
+      {{operator_or}}|
+      {{operator_qmrk}}|
+      {{operator_star}}|
+      {{operator_plus}}|
+      {{operator_arrow}}|
+      {{operator_ddot}}
+    )
 
 
 contexts:
@@ -28,8 +42,7 @@ contexts:
     # Include other contexts from here (or specify them directly).
     - include: definition
     - include: keywords
-    - include: numbers
-    - include: strings
+    - include: constants
 
   definition:
     - match: '^({{def_start_name}})\s*({{operator_def}})'
@@ -72,9 +85,15 @@ contexts:
     - match: '\b(if|else|for|while)\b'
       scope: keyword.control.lark
 
+  constants:
+    - include: numbers
+    - include: strings
+
   numbers:
-    - match: '\b(-)?[0-9.]+\b'
-      scope: constant.numeric.lark
+    - match: '\b{{sig_int_pattern}}\b'
+      scope: constant.numeric.integer.lark
+    - match: '\b({{sig_int_pattern}}\.{{int_pattern}}?|\.{{int_pattern}})\b'
+      scope: constant.numeric.float.lark
 
   strings:
     # Strings begin and end with quotes, and use backslashes as an escape
@@ -86,7 +105,7 @@ contexts:
   inside_string:
     - meta_include_prototype: false
     - meta_scope: string.quoted.double.lark
-    - match: '\.'
+    - match: '\\.'
       scope: constant.character.escape.lark
     - match: '"'
       scope: punctuation.definition.string.end.lark

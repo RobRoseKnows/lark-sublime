@@ -1,6 +1,7 @@
 // SYNTAX TEST "Packages/Lark/Lark.sublime-syntax"
 
 ?start: value
+//<- keyword.operator.lark
 //^^^^ entity.name.function.constructor.lark
 //    ^ keyword.operator.assignment.lark
 
