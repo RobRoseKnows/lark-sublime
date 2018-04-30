@@ -12,6 +12,9 @@ variables:
   def_start_name: 'start'
   operator_def: ':'
   operator_or: '|'
+  operator_qmrk: '\?'
+  operator_star: '\*'
+  operator_plus: '\+'
 
 
 contexts:
@@ -51,12 +54,14 @@ contexts:
 
 
   rule_body:
-    - match:
-
-
-
-
-
+    - match: '\b({{def_rule_format}})([{{operator_qmrk}}{{operator_plus}}{{operator_star}}]?)'
+      captures:
+        1: entity.name.function.lark
+        2: keyword.operator.lark
+    - match: '\b({{def_terminal_format}})([{{operator_qmrk}}{{operator_plus}}{{operator_star}}]?)'
+      captures:
+        1: entity.name.constant.lark
+        2: keyword.operator.lark
 
   keywords:
     # Keywords are if, else for and while.
