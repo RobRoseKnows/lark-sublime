@@ -6,12 +6,12 @@ file_extensions:
 scope: source.lark
 
 variables:
-  def_rule_format: '[a-z_]+'
-  def_terminal_format: '[A-Z_]+'
-  def_illegal_format: '(?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+'
-  def_start_name: 'start'
-  int_pattern: '[0-9]+'
-  sig_int_pattern: '-?{{int_pattern}}'
+  rule_format: '_?[a-z][_a-z0-9]*'
+  token_format: '_?[A-Z][_A-Z0-9]*'
+  illegal_format: '(?=[A-Z_]*[a-z])(?=[a-z_]*[A-Z])[a-zA-Z_]+'
+  start_name: 'start'
+  regex_format: '\/(?!\/)(\\\/|\\\\|[^\/\n])*?\/[imslux]*'
+  new_line: '(\r?\n)+\s*'
   operator_def: '\:'
   operator_or: '\|'
   operator_qmrk: '\?'
@@ -19,6 +19,7 @@ variables:
   operator_plus: '\+'
   operator_arrow: '\-\>'
   operator_ddot: '\.\.'
+  operator_bang: '\!'
   operator_any: |-
     (?:
       {{operator_def}}|
@@ -27,7 +28,8 @@ variables:
       {{operator_star}}|
       {{operator_plus}}|
       {{operator_arrow}}|
-      {{operator_ddot}}
+      {{operator_ddot}}|
+      {{operator_bang}}
     )
 
 
@@ -45,22 +47,24 @@ contexts:
     - include: constants
 
   definition:
-    - match: '^({{def_start_name}})\s*({{operator_def}})'
+    - match: '^({{start_name}})\s*({{operator_def}})'
       captures:
         1: entity.name.function.constructor.lark
         2: keyword.operator.assignment.lark
       push: rule_body
-    - match: '^({{def_rule_format}})\s*({{operator_def}})'
+    - match: ^({{operator_bang}})?({{operator_qmrk}}|)?({{rule_format}})\s*({{operator_def}})'
       captures:
-        1: entity.name.function.lark
-        2: keyword.operator.assignment.lark
+        1: keyword.operator.lark
+        2: keyword.operator.lark
+        3: entity.name.function.lark
+        4: keyword.operator.assignment.lark
       push: rule_body
-    - match: '^({{def_terminal_format}})\s*({{operator_def}})'
+    - match: '^({{token_format}})\s*({{operator_def}})'
       captures:
         1: entity.name.constant.lark
         2: keyword.operator.assignment.lark
       push: terminal_body
-    - match: '^({{def_illegal_format}})\s*({{operator_def}})'
+    - match: '^({{illegal_format}})\s*({{operator_def}})'
         1: invalid.lark
         2: keyword.operator.assignment.lark
 
@@ -90,9 +94,9 @@ contexts:
     - include: strings
 
   numbers:
-    - match: '\b{{sig_int_pattern}}\b'
+    - match: '\b\d+\b'
       scope: constant.numeric.integer.lark
-    - match: '\b({{sig_int_pattern}}\.{{int_pattern}}?|\.{{int_pattern}})\b'
+    - match: '\b-?\d+(\.\d+)?([eE][+-]?\d+)?\b'
       scope: constant.numeric.float.lark
 
   strings:
@@ -120,3 +124,10 @@ contexts:
         - meta_scope: comment.line.lark
         - match: $\n?
           pop: true
+    # - match: '#'
+    #   scope: punctuation.definition.comment.lark
+    #   push:
+    #     # This is an anonymous context push for brevity.
+    #     - meta_scope: comment.line.lark
+    #     - match: $\n?
+    #       pop: true
